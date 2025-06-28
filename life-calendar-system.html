@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life Operating System // Interactive</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #e4e4e7;
+            background: #0a0a0a;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        
+        /* Animated Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, #1e3a8a 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, #7c3aed 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, #0891b2 0%, transparent 50%);
+            opacity: 0.1;
+            z-index: -1;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Control Panel */
+        .control-panel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #18181b;
+            border: 2px solid #27272a;
+            border-radius: 12px;
+            padding: 20px;
+            z-index: 1000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        
+        .control-panel h4 {
+            color: #f4f4f5;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+        
+        .control-button {
+            display: block;
+            width: 100%;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .control-button:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+        }
+        
+        .control-button.danger {
+            background: #dc2626;
+        }
+        
+        .control-button.danger:hover {
+            background: #b91c1c;
+        }
+        
+        /* Header Styles */
+        header {
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+            color: white;
+            padding: 60px 40px;
+            border-radius: 20px;
+            margin-bottom: 40px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(255,255,255,0.03) 10px,
+                rgba(255,255,255,0.03) 20px
+            );
+            animation: slide 20s linear infinite;
+        }
+        
+        @keyframes slide {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+        
+        h1 {
+            font-size: 4em;
+            font-weight: 900;
+            margin-bottom: 10px;
+            letter-spacing: -2px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .tagline {
+            font-size: 1.4em;
+            opacity: 0.9;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 300;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .streak-counter {
+            margin-top: 20px;
+            font-size: 1.2em;
+        }
+        
+        .streak-number {
+            font-size: 2em;
+            font-weight: 700;
+            color: #10b981;
+        }
+        
+        /* Section Styles */
+        .section {
+            background: #18181b;
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid #27272a;
+            position: relative;
+        }
+        
+        .section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6, #3b82f6);
+            border-radius: 20px 20px 0 0;
+        }
+        
+        h2 {
+            color: #f4f4f5;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            letter-spacing: -1px;
+        }
+        
+        h3 {
+            color: #e4e4e7;
+            margin: 35px 0 20px;
+            font-size: 1.8em;
+            font-weight: 700;
+            border-bottom: 2px solid #27272a;
+            padding-bottom: 10px;
+        }
+        
+        h4 {
+            color: #a1a1aa;
+            margin: 25px 0 15px;
+            font-size: 1.3em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        /* Grid Layouts */
+        .daily-schedule {
+            display: grid;
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .day-section {
+            background: #09090b;
+            border: 2px solid #27272a;
+            border-radius: 16px;
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .day-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+        }
+        
+        .day-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 25px;
+        }
+        
+        .day-title {
+            font-size: 2em;
+            font-weight: 800;
+            color: #f4f4f5;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .day-theme {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 0.9em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .day-progress {
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #a1a1aa;
+        }
+        
+        .day-progress-bar {
+            height: 6px;
+            background: #27272a;
+            border-radius: 10px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+        
+        .day-progress-fill {
+            height: 100%;
+            background: #10b981;
+            transition: width 0.3s ease;
+        }
+        
+        /* Time Blocks */
+        .time-block {
+            display: grid;
+            grid-template-columns: 120px 1fr auto;
+            gap: 20px;
+            padding: 20px;
+            background: #18181b;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            align-items: center;
+            border: 1px solid #27272a;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        
+        .time-block::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: #27272a;
+            transition: all 0.3s ease;
+        }
+        
+        .time-block:hover {
+            transform: translateX(5px);
+            border-color: #3f3f46;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+        
+        .time-block.completed {
+            opacity: 0.6;
+            background: #064e3b;
+        }
+        
+        .time-block.completed::after {
+            content: '✓';
+            position: absolute;
+            right: 20px;
+            font-size: 2em;
+            color: #10b981;
+        }
+        
+        .time-block.power-hour {
+            background: linear-gradient(135deg, #1e293b, #1e1b4b);
+            border-color: #3b82f6;
+        }
+        
+        .time-block.power-hour::before {
+            background: #3b82f6;
+            box-shadow: 0 0 10px #3b82f6;
+        }
+        
+        .time-block.deep-work::before { background: #10b981; }
+        .time-block.meetings::before { background: #f59e0b; }
+        .time-block.personal::before { background: #8b5cf6; }
+        .time-block.family::before { background: #ec4899; }
+        .time-block.low-energy::before { background: #6b7280; }
+        
+        .time {
+            font-weight: 700;
+            color: #f4f4f5;
+            font-size: 1.1em;
+            font-variant-numeric: tabular-nums;
+        }
+        
+        .activity {
+            color: #d4d4d8;
+            font-size: 1.05em;
+            line-height: 1.5;
+        }
+        
+        .activity strong {
+            color: #f4f4f5;
+            font-weight: 600;
+        }
+        
+        .tag {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+        
+        .tag.critical { 
+            background: #dc2626; 
+            color: white;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.8; }
+            100% { opacity: 1; }
+        }
+        
+        .tag.high { background: #10b981; color: white; }
+        .tag.medium { background: #f59e0b; color: white; }
+        .tag.low { background: #6b7280; color: white; }
+        .tag.recharge { background: #3b82f6; color: white; }
+        
+        /* Feature Cards */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .feature-card {
+            background: #09090b;
+            border: 2px solid #27272a;
+            border-radius: 16px;
+            padding: 25px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-radius: 16px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: -1;
+        }
+        
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: transparent;
+        }
+        
+        .feature-card.completed {
+            background: #064e3b;
+            border-color: #10b981;
+        }
+        
+        .feature-icon {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            display: block;
+        }
+        
+        .feature-title {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #f4f4f5;
+            margin-bottom: 10px;
+        }
+        
+        .feature-description {
+            color: #a1a1aa;
+            line-height: 1.6;
+        }
+        
+        /* Stats Dashboard */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #1e293b, #1e1b4b);
+            border: 1px solid #3f3f46;
+            border-radius: 16px;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: scale(1.05);
+        }
+        
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%);
+        }
+        
+        .stat-number {
+            font-size: 3em;
+            font-weight: 900;
+            color: #3b82f6;
+            margin-bottom: 5px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .stat-label {
+            color: #a1a1aa;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9em;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Lists */
+        .checklist {
+            list-style: none;
+            margin: 20px 0;
+        }
+        
+        .checklist li {
+            padding: 15px 20px 15px 50px;
+            margin-bottom: 10px;
+            background: #09090b;
+            border: 1px solid #27272a;
+            border-radius: 10px;
+            position: relative;
+            color: #d4d4d8;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .checklist li:hover {
+            border-color: #3f3f46;
+            transform: translateX(5px);
+        }
+        
+        .checklist li::before {
+            content: "○";
+            position: absolute;
+            left: 20px;
+            color: #3b82f6;
+            font-weight: 700;
+            font-size: 1.2em;
+        }
+        
+        .checklist li.done {
+            background: #064e3b;
+            opacity: 0.7;
+        }
+        
+        .checklist li.done::before {
+            content: "●";
+            color: #10b981;
+        }
+        
+        /* Progress Section */
+        .progress-section {
+            margin: 30px 0;
+        }
+        
+        .progress-item {
+            margin-bottom: 25px;
+            cursor: pointer;
+        }
+        
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .progress-label {
+            color: #f4f4f5;
+            font-weight: 600;
+        }
+        
+        .progress-value {
+            color: #3b82f6;
+            font-weight: 700;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background: #27272a;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            border-radius: 10px;
+            transition: width 1s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255,255,255,0.3),
+                transparent
+            );
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        /* Timer */
+        .timer-widget {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #18181b;
+            border: 2px solid #27272a;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: none;
+        }
+        
+        .timer-widget.active {
+            display: block;
+        }
+        
+        .timer-display {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #3b82f6;
+            text-align: center;
+            margin-bottom: 15px;
+            font-variant-numeric: tabular-nums;
+        }
+        
+        .timer-controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .timer-button {
+            flex: 1;
+            padding: 10px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .timer-button:hover {
+            background: #2563eb;
+        }
+        
+        /* Notes */
+        .notes-section {
+            margin-top: 20px;
+            padding: 20px;
+            background: #09090b;
+            border-radius: 12px;
+            border: 1px solid #27272a;
+        }
+        
+        .notes-input {
+            width: 100%;
+            min-height: 100px;
+            background: #18181b;
+            border: 1px solid #27272a;
+            border-radius: 8px;
+            padding: 15px;
+            color: #e4e4e7;
+            font-family: inherit;
+            resize: vertical;
+        }
+        
+        .notes-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 { font-size: 2.5em; }
+            h2 { font-size: 1.8em; }
+            .container { padding: 10px; }
+            .section { padding: 25px; }
+            .time-block {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            .day-header {
+                flex-direction: column;
+                gap: 15px;
+            }
+            .control-panel {
+                position: static;
+                margin-bottom: 20px;
+            }
+        }
+        
+        /* Print Styles */
+        @media print {
+            body {
+                background: white;
+                color: black;
+            }
+            .section {
+                box-shadow: none;
+                border: 1px solid #ccc;
+                background: white;
+            }
+            .time-block {
+                background: white;
+                border: 1px solid #ddd;
+            }
+            .control-panel,
+            .timer-widget {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Control Panel -->
+        <div class="control-panel">
+            <h4>⚡ Quick Actions</h4>
+            <button class="control-button" onclick="resetDay()">Reset Today</button>
+            <button class="control-button" onclick="startTimer(15)">15 Min Timer</button>
+            <button class="control-button" onclick="startTimer(30)">30 Min Timer</button>
+            <button class="control-button" onclick="exportData()">Export Progress</button>
+            <button class="control-button danger" onclick="clearAllData()">Clear All Data</button>
+        </div>
+        
+        <!-- Timer Widget -->
+        <div class="timer-widget" id="timer">
+            <div class="timer-display" id="timerDisplay">00:00</div>
+            <div class="timer-controls">
+                <button class="timer-button" onclick="pauseTimer()">Pause</button>
+                <button class="timer-button" onclick="stopTimer()">Stop</button>
+            </div>
+        </div>
+        
+        <header>
+            <h1>⚡ LIFE OPERATING SYSTEM</h1>
+            <p class="tagline">6 Hours Sleep • 3 Power Hours • Zero Work Before 9AM</p>
+            <div class="streak-counter">
+                Current Streak: <span class="streak-number" id="streakCount">0</span> Days
+            </div>
+        </header>
+        
+        <!-- Core Principles -->
+        <div class="section">
+            <h2>🎯 Core Operating Principles</h2>
+            
+            <div class="feature-grid">
+                <div class="feature-card" onclick="toggleCard(this)">
+                    <span class="feature-icon">⏰</span>
+                    <h4 class="feature-title">Sacred Morning Hours</h4>
+                    <p class="feature-description">6-9 AM is YOUR time. No work emails, no meetings, no exceptions. This is when you build your life.</p>
+                </div>
+                
+                <div class="feature-card" onclick="toggleCard(this)">
+                    <span class="feature-icon">🔋</span>
+                    <h4 class="feature-title">Energy > Time</h4>
+                    <p class="feature-description">Match tasks to energy levels. High-energy mornings for creation, low-energy evenings for maintenance.</p>
+                </div>
+                
+                <div class="feature-card" onclick="toggleCard(this)">
+                    <span class="feature-icon">🎯</span>
+                    <h4 class="feature-title">Touch It Twice</h4>
+                    <p class="feature-description">Every project gets touched at least 2x per week. No more stalled projects or guilt.</p>
+                </div>
+                
+                <div class="feature-card" onclick="toggleCard(this)">
+                    <span class="feature-icon">🚀</span>
+                    <h4 class="feature-title">15-Minute Magic</h4>
+                    <p class="feature-description">Daily 15-minute sprints compound into massive progress. Small actions, big results.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Today's Schedule -->
+        <div class="section">
+            <h2>📅 Today's Schedule</h2>
+            <div id="todaySchedule" class="daily-schedule">
+                <!-- Today's schedule will be inserted here by JavaScript -->
+            </div>
+            
+            <!-- Notes Section -->
+            <div class="notes-section">
+                <h4>📝 Today's Notes</h4>
+                <textarea class="notes-input" id="dailyNotes" placeholder="What went well? What needs adjustment? Any wins to celebrate?"></textarea>
+            </div>
+        </div>
+        
+        <!-- Progress Tracking -->
+        <div class="section">
+            <h2>📊 Weekly Progress Tracking</h2>
+            
+            <div class="progress-section">
+                <div class="progress-item" onclick="incrementProgress('movement', 3)">
+                    <div class="progress-header">
+                        <span class="progress-label">🏀 Movement (Target: 3x)</span>
+                        <span class="progress-value"><span id="movement-current">0</span>/3</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="movement-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <div class="progress-item" onclick="incrementProgress('diy', 4)">
+                    <div class="progress-header">
+                        <span class="progress-label">🔨 DIY Touch Points (Target: 4x)</span>
+                        <span class="progress-value"><span id="diy-current">0</span>/4</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="diy-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <div class="progress-item" onclick="incrementProgress('investment', 2)">
+                    <div class="progress-header">
+                        <span class="progress-label">💰 Investment Actions (Target: 2x)</span>
+                        <span class="progress-value"><span id="investment-current">0</span>/2</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="investment-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <div class="progress-item" onclick="incrementProgress('n8n', 2)">
+                    <div class="progress-header">
+                        <span class="progress-label">🤖 n8n Progress (Target: 2x)</span>
+                        <span class="progress-value"><span id="n8n-current">0</span>/2</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="n8n-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <div class="progress-item" onclick="incrementProgress('sleep', 7)">
+                    <div class="progress-header">
+                        <span class="progress-label">😴 Sleep Consistency (Target: 7/7)</span>
+                        <span class="progress-value"><span id="sleep-current">0</span>/7</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="sleep-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Wins -->
+        <div class="section">
+            <h2>⚡ This Week's Quick Wins</h2>
+            
+            <div class="stats-grid">
+                <div class="stat-card" onclick="updateStat(this, 'wakeTime')">
+                    <div class="stat-number" id="wakeTimeStat">6:00</div>
+                    <div class="stat-label">Today's Wake Time</div>
+                </div>
+                
+                <div class="stat-card" onclick="updateStat(this, 'projectHours')">
+                    <div class="stat-number" id="projectHoursStat">0</div>
+                    <div class="stat-label">Project Hours Completed</div>
+                </div>
+                
+                <div class="stat-card" onclick="updateStat(this, 'mealPrep')">
+                    <div class="stat-number" id="mealPrepStat">0</div>
+                    <div class="stat-label">Meals Prepped</div>
+                </div>
+                
+                <div class="stat-card" onclick="updateStat(this, 'diyMinutes')">
+                    <div class="stat-number" id="diyMinutesStat">0</div>
+                    <div class="stat-label">DIY Minutes Today</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Schedule data for each day
+        const schedules = {
+            0: { // Sunday
+                name: '🍳 SUNDAY',
+                theme: 'Prep & Reset Day',
+                blocks: [
+                    { time: '7:00 AM', activity: 'SLEEP IN: One day to 7 AM → Body recovery → Still early enough', type: 'low-energy', energy: 'RECOVERY' },
+                    { time: '8:00 AM', activity: 'SLOW BREAKFAST: Big family meal → No rush → Connect', type: 'family', energy: 'MEDIUM' },
+                    { time: '10:00 AM', activity: 'MEAL PREP POWER: 3 dinners → Cut veggies → Portion snacks → Week made easy', type: 'power-hour', energy: 'HIGH' },
+                    { time: '12:00 PM', activity: 'DURING NAP: Week planning → Update calendars → Financial check', type: 'personal', energy: 'MEDIUM' },
+                    { time: '3:00 PM', activity: 'FAMILY TIME: Easy activity → Maybe more park → Keep it light', type: 'family', energy: 'LOW' },
+                    { time: '5:00 PM', activity: 'WEEK PREP: Laundry → Prep work clothes → Reset house', type: 'personal', energy: 'LOW' },
+                    { time: '7:00 PM', activity: 'SUNDAY DINNER: Use meal prep → Family table → Week reflection', type: 'family', energy: 'LOW' },
+                    { time: '8:30 PM', activity: 'EARLY WIND DOWN: Tomorrow is launch day → Prep for strong start', type: 'low-energy', energy: 'WIND DOWN' },
+                    { time: '10:30 PM', activity: 'EARLY BED: Bank some sleep → Start week strong', type: 'critical', energy: 'CRITICAL' }
+                ]
+            },
+            1: { // Monday
+                name: '🚀 MONDAY',
+                theme: 'Launch Week Strong',
+                blocks: [
+                    { time: '6:00 AM', activity: 'WAKE RITUAL: Alarm across room → Make bed → Face splash → 5 pushups → Start coffee', type: 'critical', energy: 'CRITICAL' },
+                    { time: '6:05 AM', activity: 'QUICK WIN: Check weekend automation results, scan calendar, write 3 priorities', type: 'power-hour', energy: 'HIGH' },
+                    { time: '6:15 AM', activity: 'WEEK PLANNING: Review last week wins → Set this week\'s ONE big goal → Time block calendar', type: 'power-hour', energy: 'HIGH' },
+                    { time: '6:30 AM', activity: 'INVESTMENT CHECK: Review positions → Check rebalancing alerts → One learning task', type: 'power-hour', energy: 'HIGH' },
+                    { time: '6:45 AM', activity: 'TRANSITION: Quick shower → Prep clothes → Set up workspace', type: 'personal', energy: 'MEDIUM' },
+                    { time: '7:00 AM', activity: 'FAMILY TIME: Feed dog → Make breakfast → Connect with wife & daughter', type: 'family', energy: 'MEDIUM' },
+                    { time: '8:00 AM', activity: 'TRANSITION: Wife takes daughter to school → You have the house', type: 'family', energy: 'MEDIUM' },
+                    { time: '8:00-9:00 AM', activity: 'POWER HOUR #2: n8n automation building → Test weekend workflows → Document', type: 'power-hour', energy: 'HIGH' },
+                    { time: '9:00 AM', activity: 'WORK BEGINS: Deep focus block → No meetings → Hardest task first', type: 'deep-work', energy: 'HIGH' },
+                    { time: '12:00 PM', activity: 'LUNCH + MOVEMENT: Eat → 20 min basketball → Quick energy reset', type: 'personal', energy: 'RECHARGE' },
+                    { time: '5:30 PM', activity: 'DINNER PREP: Check meal prep → Cook/heat → Set table', type: 'family', energy: 'MEDIUM' },
+                    { time: '6:30 PM', activity: 'DIVIDE & CONQUER: Wife does bath/bed → You: kitchen cleanup + 15-min investment research', type: 'personal', energy: 'MEDIUM' },
+                    { time: '8:30 PM', activity: 'PROJECT HOUR: n8n deep work → Build one complete automation', type: 'personal', energy: 'SECOND WIND' },
+                    { time: '11:45 PM', activity: 'SLEEP PREP: Everything off → In bed → No scrolling', type: 'critical', energy: 'CRITICAL' }
+                ]
+            },
+            2: { // Tuesday
+                name: '🔨 TUESDAY',
+                theme: 'DIY Focus Day',
+                blocks: [
+                    { time: '6:00 AM', activity: 'WAKE RITUAL: Same as Monday → Consistency is key', type: 'critical', energy: 'CRITICAL' },
+                    { time: '6:15 AM', activity: 'DIY PLANNING: Review project status → Today\'s specific goals → Order any supplies needed', type: 'power-hour', energy: 'HIGH' },
+                    { time: '6:30 AM', activity: 'RESEARCH: YouTube tutorials → Measure twice → Write cut list', type: 'power-hour', energy: 'HIGH' },
+                    { time: '7:00 AM', activity: 'FAMILY BREAKFAST: Present with family → Fuel up for the day', type: 'family', energy: 'MEDIUM' },
+                    { time: '8:00 AM', activity: 'SCHOOL RUN: You take daughter → Use drive for audiobook/podcast', type: 'family', energy: 'MEDIUM' },
+                    { time: '8:30 AM', activity: 'BONUS TIME: Order DIY supplies online → Stage tools → Quick garage organization', type: 'power-hour', energy: 'HIGH' },
+                    { time: '9:00 AM', activity: 'WORK STARTS: Later start = fresher mind → Crush it', type: 'deep-work', energy: 'HIGH' },
+                    { time: '12:00 PM', activity: 'LUNCH: Walk while eating → Listen to DIY podcast → Mental prep for evening project', type: 'personal', energy: 'RECHARGE' },
+                    { time: '4:30 PM', activity: 'PICKUP TIME: Leave for school → Transition mindset', type: 'family', energy: 'MEDIUM' },
+                    { time: '6:30 PM', activity: 'KITCHEN + DIY SPRINT: While wife does bedtime → 15 min measuring/marking project', type: 'personal', energy: 'MEDIUM' },
+                    { time: '8:30 PM', activity: 'DIY POWER HOUR: Major project work → Headphones on → Deep focus', type: 'personal', energy: 'SECOND WIND' },
+                    { time: '9:30 PM', activity: 'CLEANUP: Tools away → Quick sweep → Photo progress', type: 'low-energy', energy: 'LOW' }
+                ]
+            },
+            3: { // Wednesday
+                name: '🏠 WEDNESDAY',
+                theme: 'House & Health Day',
+                blocks: [
+                    { time: '6:00 AM', activity: 'WAKE + WORKOUT: Wake ritual → Then 20 min HIIT/strength in garage', type: 'critical', energy: 'CRITICAL' },
+                    { time: '6:25 AM', activity: 'POST-WORKOUT: Quick shower → Protein shake → Feel amazing', type: 'power-hour', energy: 'HIGH' },
+                    { time: '6:45 AM', activity: 'PLAN DAY: Review house tasks → Investment quick check → Set intentions', type: 'power-hour', energy: 'HIGH' },
+                    { time: '8:00 AM', activity: 'SCHOOL RUN: You take daughter → Morning drive connection', type: 'family', energy: 'MEDIUM' },
+                    { time: '8:30 AM', activity: 'HOUSE SPRINT: One 30-min house project before work', type: 'personal', energy: 'HIGH' },
+                    { time: '9:00 AM', activity: 'WORK BEGINS: Fresh from workout → High focus', type: 'deep-work', energy: 'HIGH' },
+                    { time: '12:00 PM', activity: 'BASKETBALL: Full court if possible → Get that sweat', type: 'personal', energy: 'RECHARGE' },
+                    { time: '6:30 PM', activity: 'POWER CLEAN HOUR: Blast music → Speed clean → House reset for week', type: 'personal', energy: 'MEDIUM' },
+                    { time: '8:30 PM', activity: 'INVESTMENT DEEP DIVE: Research new positions → Read analysis → Make moves', type: 'personal', energy: 'SECOND WIND' }
+                ]
+            },
+            4: { // Thursday
+                name: '🚀 THURSDAY',
+                theme: 'Push Forward Day',
+                blocks: [
+                    { time: '6:00 AM', activity: 'WAKE RITUAL: Standard morning → Build the habit', type: 'critical', energy: 'CRITICAL' },
+                    { time: '6:15 AM', activity: 'n8n DEEP WORK: Build complex automation → No distractions → Ship it', type: 'power-hour', energy: 'HIGH' },
+                    { time: '8:00 AM', activity: 'SCHOOL RUN: You take daughter → Morning connection', type: 'family', energy: 'MEDIUM' },
+                    { time: '8:30 AM', activity: 'QUICK DIY: 30 min on project → Small progress → Maintain momentum', type: 'power-hour', energy: 'HIGH' },
+                    { time: '9:00 AM', activity: 'WORK BEGINS: Apply morning momentum', type: 'deep-work', energy: 'HIGH' },
+                    { time: '12:00 PM', activity: 'WALK: Clear head → Phone off → Think time', type: 'personal', energy: 'RECHARGE' },
+                    { time: '8:30 PM', activity: 'DIY PROGRESS: Continue Tuesday\'s work → Make real progress', type: 'personal', energy: 'SECOND WIND' }
+                ]
+            },
+            5: { // Friday
+                name: '🎉 FRIDAY',
+                theme: 'Wrap & Celebrate',
+                blocks: [
+                    { time: '6:00 AM', activity: 'WAKE RITUAL: End week strong', type: 'critical', energy: 'CRITICAL' },
+                    { time: '6:15 AM', activity: 'WEEK REVIEW: What won? → What didn\'t? → Key learnings → Next week\'s ONE thing', type: 'power-hour', energy: 'HIGH' },
+                    { time: '8:00 AM', activity: 'LIFE ADMIN: Bills → Appointments → Clear all loops', type: 'power-hour', energy: 'MEDIUM' },
+                    { time: '9:00 AM', activity: 'WORK BEGINS: Wrap up week strong', type: 'deep-work', energy: 'HIGH' },
+                    { time: '12:00 PM', activity: 'VICTORY LAP: Basketball with extra energy → You earned it', type: 'personal', energy: 'RECHARGE' },
+                    { time: '8:30 PM', activity: 'FAMILY MOVIE: Everyone together → Popcorn → No projects tonight', type: 'family', energy: 'LOW' }
+                ]
+            },
+            6: { // Saturday
+                name: '🛠️ SATURDAY',
+                theme: 'Project Power Day',
+                blocks: [
+                    { time: '6:00 AM', activity: 'WEEKEND WAKE: Same time (consistency!) → Slow coffee → Plan DIY attack', type: 'power-hour', energy: 'MEDIUM' },
+                    { time: '7:00 AM', activity: 'FAMILY BREAKFAST: Pancakes? → Everyone together → No rush', type: 'family', energy: 'MEDIUM' },
+                    { time: '9:00 AM', activity: 'PARK/ADVENTURE: Family time → Tire out kid → Fresh air', type: 'family', energy: 'HIGH' },
+                    { time: '12:00 PM', activity: 'NAP TIME = GO TIME: 3-hour DIY mega block → This is your Super Bowl', type: 'critical', energy: 'MAXIMUM' },
+                    { time: '3:00 PM', activity: 'FAMILY TIME: Kid up → Snack → Afternoon activity', type: 'family', energy: 'MEDIUM' },
+                    { time: '4:30 PM', activity: 'GROCERIES: List ready → Speed run → Week prep', type: 'personal', energy: 'LOW' },
+                    { time: '7:00 PM', activity: 'EASY DINNER: Pizza? Takeout? You worked hard today', type: 'family', energy: 'LOW' },
+                    { time: '8:30 PM', activity: 'RELAX: You earned it → Photo DIY progress → Feel accomplished', type: 'low-energy', energy: 'LOW' }
+                ]
+            }
+        };
+        
+        // Initialize data from localStorage
+        let data = {
+            streak: 0,
+            lastDate: null,
+            completedBlocks: {},
+            progress: {
+                movement: 0,
+                diy: 0,
+                investment: 0,
+                n8n: 0,
+                sleep: 0
+            },
+            stats: {
+                wakeTime: '6:00',
+                projectHours: 0,
+                mealPrep: 0,
+                diyMinutes: 0
+            },
+            notes: {}
+        };
+        
+        // Load saved data
+        function loadData() {
+            const saved = localStorage.getItem('lifeOSData');
+            if (saved) {
+                data = JSON.parse(saved);
+            }
+            updateUI();
+        }
+        
+        // Save data
+        function saveData() {
+            localStorage.setItem('lifeOSData', JSON.stringify(data));
+        }
+        
+        // Update UI with current data
+        function updateUI() {
+            // Update streak
+            document.getElementById('streakCount').textContent = data.streak;
+            
+            // Update progress bars
+            ['movement', 'diy', 'investment', 'n8n', 'sleep'].forEach(metric => {
+                const current = data.progress[metric];
+                const max = { movement: 3, diy: 4, investment: 2, n8n: 2, sleep: 7 }[metric];
+                document.getElementById(`${metric}-current`).textContent = current;
+                document.getElementById(`${metric}-bar`).style.width = `${(current / max) * 100}%`;
+            });
+            
+            // Update stats
+            document.getElementById('wakeTimeStat').textContent = data.stats.wakeTime;
+            document.getElementById('projectHoursStat').textContent = data.stats.projectHours;
+            document.getElementById('mealPrepStat').textContent = data.stats.mealPrep;
+            document.getElementById('diyMinutesStat').textContent = data.stats.diyMinutes;
+            
+            // Load today's schedule
+            loadTodaySchedule();
+            
+            // Load notes
+            const today = new Date().toDateString();
+            document.getElementById('dailyNotes').value = data.notes[today] || '';
+        }
+        
+        // Load today's schedule
+        function loadTodaySchedule() {
+            const today = new Date().getDay();
+            const schedule = schedules[today];
+            const container = document.getElementById('todaySchedule');
+            
+            const html = `
+                <div class="day-section">
+                    <div class="day-header">
+                        <h3 class="day-title">${schedule.name}</h3>
+                        <span class="day-theme">${schedule.theme}</span>
+                    </div>
+                    <div class="day-progress">
+                        Progress: <span id="dayProgressText">0/${schedule.blocks.length}</span>
+                        <div class="day-progress-bar">
+                            <div class="day-progress-fill" id="dayProgressBar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    ${schedule.blocks.map((block, index) => `
+                        <div class="time-block ${block.type} ${isBlockCompleted(today, index) ? 'completed' : ''}" 
+                             onclick="toggleBlock(${today}, ${index})">
+                            <span class="time">${block.time}</span>
+                            <span class="activity"><strong>${block.activity}</strong></span>
+                            <span class="tag ${block.energy.toLowerCase().replace(' ', '-')}">${block.energy}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            container.innerHTML = html;
+            updateDayProgress();
+        }
+        
+        // Check if block is completed
+        function isBlockCompleted(day, index) {
+            const key = `${day}-${index}`;
+            return data.completedBlocks[key] === new Date().toDateString();
+        }
+        
+        // Toggle block completion
+        function toggleBlock(day, index) {
+            const key = `${day}-${index}`;
+            const today = new Date().toDateString();
+            
+            if (data.completedBlocks[key] === today) {
+                delete data.completedBlocks[key];
+            } else {
+                data.completedBlocks[key] = today;
+            }
+            
+            saveData();
+            loadTodaySchedule();
+        }
+        
+        // Update day progress
+        function updateDayProgress() {
+            const today = new Date().getDay();
+            const schedule = schedules[today];
+            const todayString = new Date().toDateString();
+            
+            let completed = 0;
+            schedule.blocks.forEach((_, index) => {
+                if (data.completedBlocks[`${today}-${index}`] === todayString) {
+                    completed++;
+                }
+            });
+            
+            document.getElementById('dayProgressText').textContent = `${completed}/${schedule.blocks.length}`;
+            document.getElementById('dayProgressBar').style.width = `${(completed / schedule.blocks.length) * 100}%`;
+            
+            // Update streak
+            if (completed === schedule.blocks.length && data.lastDate !== todayString) {
+                data.streak++;
+                data.lastDate = todayString;
+                saveData();
+                updateUI();
+            }
+        }
+        
+        // Toggle card completion
+        function toggleCard(element) {
+            element.classList.toggle('completed');
+        }
+        
+        // Increment progress
+        function incrementProgress(metric, max) {
+            if (data.progress[metric] < max) {
+                data.progress[metric]++;
+            } else {
+                data.progress[metric] = 0;
+            }
+            saveData();
+            updateUI();
+        }
+        
+        // Update stat
+        function updateStat(element, statName) {
+            const current = data.stats[statName];
+            let newValue;
+            
+            if (statName === 'wakeTime') {
+                newValue = prompt('Enter wake time:', current);
+            } else {
+                newValue = parseInt(prompt(`Enter ${statName}:`, current));
+            }
+            
+            if (newValue !== null) {
+                data.stats[statName] = newValue;
+                saveData();
+                updateUI();
+            }
+        }
+        
+        // Timer functions
+        let timerInterval;
+        let timerSeconds = 0;
+        
+        function startTimer(minutes) {
+            timerSeconds = minutes * 60;
+            document.getElementById('timer').classList.add('active');
+            updateTimerDisplay();
+            
+            timerInterval = setInterval(() => {
+                timerSeconds--;
+                updateTimerDisplay();
+                
+                if (timerSeconds <= 0) {
+                    stopTimer();
+                    alert('Timer finished!');
+                }
+            }, 1000);
+        }
+        
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timerSeconds / 60);
+            const seconds = timerSeconds % 60;
+            document.getElementById('timerDisplay').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        function pauseTimer() {
+            clearInterval(timerInterval);
+        }
+        
+        function stopTimer() {
+            clearInterval(timerInterval);
+            document.getElementById('timer').classList.remove('active');
+        }
+        
+        // Reset today's progress
+        function resetDay() {
+            if (confirm('Reset all of today\'s progress?')) {
+                const today = new Date().getDay();
+                const todayString = new Date().toDateString();
+                
+                // Clear today's completed blocks
+                Object.keys(data.completedBlocks).forEach(key => {
+                    if (data.completedBlocks[key] === todayString) {
+                        delete data.completedBlocks[key];
+                    }
+                });
+                
+                saveData();
+                loadTodaySchedule();
+            }
+        }
+        
+        // Export data
+        function exportData() {
+            const dataStr = JSON.stringify(data, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const exportFileDefaultName = `life-os-backup-${new Date().toISOString().split('T')[0]}.json`;
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+        }
+        
+        // Clear all data
+        function clearAllData() {
+            if (confirm('This will delete ALL your data. Are you sure?')) {
+                if (confirm('Really sure? This cannot be undone!')) {
+                    localStorage.removeItem('lifeOSData');
+                    location.reload();
+                }
+            }
+        }
+        
+        // Save notes
+        document.getElementById('dailyNotes').addEventListener('input', function() {
+            const today = new Date().toDateString();
+            data.notes[today] = this.value;
+            saveData();
+        });
+        
+        // Check for new day and reset weekly progress
+        function checkNewWeek() {
+            const savedWeek = localStorage.getItem('currentWeek');
+            const currentWeek = new Date().getWeek();
+            
+            if (savedWeek !== currentWeek.toString()) {
+                // Reset weekly progress
+                data.progress = {
+                    movement: 0,
+                    diy: 0,
+                    investment: 0,
+                    n8n: 0,
+                    sleep: 0
+                };
+                localStorage.setItem('currentWeek', currentWeek.toString());
+                saveData();
+            }
+        }
+        
+        // Get week number
+        Date.prototype.getWeek = function() {
+            const onejan = new Date(this.getFullYear(), 0, 1);
+            return Math.ceil((((this - onejan) / 86400000) + onejan.getDay() + 1) / 7);
+        };
+        
+        // Initialize
+        loadData();
+        checkNewWeek();
+    </script>
+</body>
+</html>
